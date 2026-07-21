@@ -31,6 +31,14 @@ cargo test            # parser + storage tests against a bundled sample PDF
 The parser uses the pure-Rust `pdf-extract` crate and falls back to poppler's
 `pdftotext` (`brew install poppler` / `apt install poppler-utils`) if that fails.
 
+## Credits
+
+Historical data (January 2020 – July 2026) was backfilled from
+[sahilgupta/sbi-fx-ratekeeper](https://github.com/sahilgupta/sbi-fx-ratekeeper),
+which in turn credits [skbly7/sbi-tt-rates-historical](https://github.com/skbly7/sbi-tt-rates-historical),
+the forex rate card archives of Maneesh K. Singh & Co., and the Internet
+Archive Wayback Machine for pre-Dec-2022 data.
+
 ## Structure
 
 ```
