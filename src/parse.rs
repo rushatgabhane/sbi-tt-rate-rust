@@ -1,6 +1,3 @@
-use std::io::Write;
-use std::process::Command;
-
 use anyhow::{anyhow, bail, Context, Result};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use regex::Regex;
@@ -9,45 +6,17 @@ use crate::{CurrencyRates, RateSheet};
 
 const REFERENCE_MARKER: &str = "to be used as reference rates";
 
-/// Parse the rate sheet out of the PDF bytes. Tries the pure-Rust extractor
-/// first and falls back to poppler's `pdftotext` (if installed) when that
-/// fails, since the two handle malformed PDFs differently.
+/// Parse the rate sheet out of the PDF bytes.
 pub fn parse_pdf(bytes: &[u8]) -> Result<RateSheet> {
-    let rust_result = extract_text_rust(bytes).and_then(|text| parse_text(&text));
-    match rust_result {
-        Ok(sheet) => Ok(sheet),
-        Err(rust_err) => {
-            eprintln!("pdf-extract path failed ({rust_err:#}), trying pdftotext");
-            extract_text_poppler(bytes)
-                .and_then(|text| parse_text(&text))
-                .map_err(|poppler_err| {
-                    anyhow!("pdf-extract: {rust_err:#}; pdftotext: {poppler_err:#}")
-                })
-        }
-    }
+    let text = extract_text(bytes)?;
+    parse_text(&text)
 }
 
-fn extract_text_rust(bytes: &[u8]) -> Result<String> {
+fn extract_text(bytes: &[u8]) -> Result<String> {
     // pdf-extract is known to panic on some malformed PDFs, not just error.
     std::panic::catch_unwind(|| pdf_extract::extract_text_from_mem(bytes))
         .map_err(|_| anyhow!("pdf-extract panicked"))?
         .context("pdf-extract failed")
-}
-
-fn extract_text_poppler(bytes: &[u8]) -> Result<String> {
-    let path = std::env::temp_dir().join(format!("sbi-tt-rate-{}.pdf", std::process::id()));
-    std::fs::File::create(&path)?.write_all(bytes)?;
-
-    let output = Command::new("pdftotext")
-        .args(["-layout", path.to_str().unwrap(), "-"])
-        .output()
-        .context("failed to run pdftotext (is poppler installed?)")?;
-    let _ = std::fs::remove_file(&path);
-
-    if !output.status.success() {
-        bail!("pdftotext exited with {}", output.status);
-    }
-    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
 /// Parse the extracted PDF text into a rate sheet.

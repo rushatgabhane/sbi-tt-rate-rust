@@ -22,12 +22,6 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      # pdftotext is the fallback extractor when pdf-extract chokes on the PDF
-      - name: Install poppler
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y poppler-utils
-
       - name: Download and parse rates
         run: cargo run --release
 

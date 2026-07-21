@@ -28,9 +28,6 @@ cargo run --release   # downloads today's PDF, updates csv_files/ and pdf_files/
 cargo test            # parser + storage tests against a bundled sample PDF
 ```
 
-The parser uses the pure-Rust `pdf-extract` crate and falls back to poppler's
-`pdftotext` (`brew install poppler` / `apt install poppler-utils`) if that fails.
-
 ## Credits
 
 Historical data (January 2020 – July 2026) was backfilled from
@@ -42,7 +39,7 @@ Archive Wayback Machine for pre-Dec-2022 data.
 ## Structure
 
 ```
-src/fetch.rs   HTTP download: primary + fallback SBI URL, retries, %PDF check
+src/fetch.rs   HTTP download: retries, %PDF check
 src/parse.rs   PDF text extraction, date/time + currency-rate parsing
 src/store.rs   PDF archiving and per-currency CSV upsert (dedup by DATE, sorted)
 src/main.rs    fetch → parse → store
