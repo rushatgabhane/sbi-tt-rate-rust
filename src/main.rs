@@ -19,15 +19,7 @@ fn run() -> anyhow::Result<()> {
     let pdf_bytes = fetch::download_rates_pdf()?;
     println!("downloaded rates PDF ({} bytes)", pdf_bytes.len());
 
-    let sheet = match parse::parse_pdf(&pdf_bytes) {
-        Ok(sheet) => sheet,
-        Err(e) => {
-            // Keep the PDF so it gets committed and can be re-parsed later.
-            let path = store::save_unparsed_pdf(&pdf_bytes, root)?;
-            eprintln!("saved unparseable PDF to {}", path.display());
-            return Err(e);
-        }
-    };
+    let sheet = parse::parse_pdf(&pdf_bytes)?;
 
     let pdf_path = store::save_pdf(&pdf_bytes, sheet.published_at, root)?;
     store::update_csvs(&sheet, root)?;

@@ -3,7 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
-use chrono::{NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
 
 use crate::{RateSheet, CSV_DATE_FORMAT, RATE_COLUMNS};
 
@@ -17,17 +17,6 @@ pub fn save_pdf(bytes: &[u8], published_at: NaiveDateTime, root: &Path) -> Resul
     fs::create_dir_all(&dir)?;
 
     let path = dir.join(format!("{}.pdf", published_at.format("%Y-%m-%d")));
-    fs::write(&path, bytes).with_context(|| format!("failed to write {}", path.display()))?;
-    Ok(path)
-}
-
-/// Save a PDF we could not parse, named by download time, so it still gets
-/// committed and can be re-parsed once the parser is fixed.
-pub fn save_unparsed_pdf(bytes: &[u8], root: &Path) -> Result<PathBuf> {
-    let dir = root.join("pdf_files").join("unparsed");
-    fs::create_dir_all(&dir)?;
-
-    let path = dir.join(format!("{}.pdf", Utc::now().format("%Y-%m-%dT%H-%M-%SZ")));
     fs::write(&path, bytes).with_context(|| format!("failed to write {}", path.display()))?;
     Ok(path)
 }

@@ -15,8 +15,7 @@ A GitHub Action runs twice a day (16:00 and 22:00 IST), downloads
 
 The CSV layout is identical to [sahilgupta/sbi-fx-ratekeeper](https://github.com/sahilgupta/sbi-fx-ratekeeper),
 so files from the two repos are interchangeable. If a run fails (SBI down,
-PDF unparseable), the workflow opens a GitHub issue; an unparseable PDF is
-still committed under `pdf_files/unparsed/` for later re-parsing.
+PDF unparseable), the workflow opens a GitHub issue.
 
 > **Note:** only the rates published for the ₹10–20 lakh transaction range are
 > reference rates; they do not change with your transaction value.

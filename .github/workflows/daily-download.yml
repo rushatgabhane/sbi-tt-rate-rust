@@ -26,14 +26,10 @@ jobs:
         run: cargo run --release
 
       - name: Get IST timestamp
-        if: always()
         id: time
         run: echo "now=$(TZ=Asia/Kolkata date '+%A, %d %B %Y, %I:%M %p %Z')" >> "$GITHUB_OUTPUT"
 
-      # always() so an unparseable PDF (saved under pdf_files/unparsed/)
-      # still gets committed even when the run fails
       - name: Commit rates
-        if: always()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto Commit: SBI rates at ${{ steps.time.outputs.now }}"
