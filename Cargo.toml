@@ -1,0 +1,14 @@
+[package]
+name = "sbi-tt-rate"
+version = "0.1.0"
+edition = "2021"
+description = "Downloads SBI's daily forex card rates PDF and archives the rates as per-currency CSV files"
+license = "MIT"
+
+[dependencies]
+anyhow = "1"
+chrono = "0.4"
+csv = "1"
+pdf-extract = "0.7"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }

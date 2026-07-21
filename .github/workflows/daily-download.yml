@@ -1,0 +1,61 @@
+name: Download SBI forex rates
+
+on:
+  schedule:
+    # 16:00 and 22:00 IST, same as sahilgupta/sbi-fx-ratekeeper
+    - cron: "30 10,16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  download:
+    name: Download and archive rates
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      # pdftotext is the fallback extractor when pdf-extract chokes on the PDF
+      - name: Install poppler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+
+      - name: Download and parse rates
+        run: cargo run --release
+
+      - name: Get IST timestamp
+        if: always()
+        id: time
+        run: echo "now=$(TZ=Asia/Kolkata date '+%A, %d %B %Y, %I:%M %p %Z')" >> "$GITHUB_OUTPUT"
+
+      # always() so an unparseable PDF (saved under pdf_files/unparsed/)
+      # still gets committed even when the run fails
+      - name: Commit rates
+        if: always()
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto Commit: SBI rates at ${{ steps.time.outputs.now }}"
+
+      - name: Create issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          title="SBI rates download failed on $(TZ=Asia/Kolkata date '+%Y-%m-%d')"
+          existing=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq 'length')
+          if [ "$existing" != "0" ]; then
+            echo "Open issue with this title already exists, skipping"
+          else
+            gh issue create \
+              --title "$title" \
+              --body "The scheduled rates download failed. Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
